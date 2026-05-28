@@ -68,8 +68,15 @@ func main() {
 
 			fmt.Printf("All the bookings made are: %v\n", firstNames)
 		} else {
-			fmt.Printf("One or more of your input data is invalid, try again\n")
-
+			if !isValidName {
+				fmt.Println("Your first name and last name must be more than 2 characters")
+			}
+			if !isValidEmail {
+				fmt.Println("Incorrect email format detected")
+			}
+			if !isValidUserTicket {
+				fmt.Println("Number of tickets requested is invalid")
+			}
 		}
 	}
 }
