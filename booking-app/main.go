@@ -39,23 +39,37 @@ func main() {
 		fmt.Println("Enter the number of tickets you would want: ")
 		fmt.Scan(&userTickets)
 
-		remainingTickets = remainingTickets - userTickets
+		// basic user input validation
+		isValidName := len(firstName) >= 2 && len(lastName) >=2
+		isValidEmail := strings.Contains(email, "@")
+		isValidUserTicket := userTickets > 0 && userTickets <= remainingTickets
 
-	    //bookings[0] = firstName + " " + lastName
-		bookings = append(bookings, firstName + " " + lastName)
-		fmt.Printf("Thank you %v %v for booking %v number of tickets. You will receive an email at %v to confirm details of your booking.\n", firstName, lastName, userTickets, email)
+        if isValidName && isValidEmail && isValidUserTicket {
 
-		fmt.Printf("%v tickets remaining for %v\n", remainingTickets, conferenceName)
+			remainingTickets = remainingTickets - userTickets
+			//bookings[0] = firstName + " " + lastName
+			//
+			bookings = append(bookings, firstName + " " + lastName)
+			fmt.Printf("Thank you %v %v for booking %v number of tickets. You will receive an email at %v to confirm details of your booking.\n", firstName, lastName, userTickets, email)
 
-        firstNames := []string{}
-		for _, booking := range(bookings) {
-			var names = strings.Fields(booking) // used to seperate words based on whitespace
-			firstNames = append(firstNames, names[0])
+
+			fmt.Printf("%v tickets remaining for %v\n", remainingTickets, conferenceName)
+
+			firstNames := []string{}
+
+			for _, booking := range(bookings) {
+				var names = strings.Fields(booking) // used to seperate words based on whitespace
+				firstNames = append(firstNames, names[0])
+			}
+			if remainingTickets == 0 {
+				fmt.Printf("Our conference is booked! Come back next year\n")
+				break // ends the indefinite loop
+			}
+
+			fmt.Printf("All the bookings made are: %v\n", firstNames)
+		} else {
+			fmt.Printf("One or more of your input data is invalid, try again\n")
+
 		}
-
-		
-
-		fmt.Printf("All the bookings made are: %v\n", firstNames)
 	}
-
 }
