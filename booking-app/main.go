@@ -3,6 +3,8 @@ package main
 import (
 	"booking-app/helper"
 	"fmt"
+	"time"
+	"sync"
 )
 
 var conferenceName = "Go Conference"
@@ -19,13 +21,14 @@ type UserInfo struct {
 	numOfTickets uint
 }
 
+var wg = sync.WaitGroup{}
 
 func main() {
 
 	greetUsers()
 	//var bookings [50]string  // arrays defined with data type and fixed size
 
-	for {
+	//for {
 		firstName, lastName, email, userTickets := getUserInput()
 
 		// basic user input validation
@@ -33,11 +36,14 @@ func main() {
         if isValidName && isValidEmail && isValidUserTicket {
 			bookings = bookTickets(userTickets, firstName,lastName, email)
 
+			wg.Add(1) // specifies go thread to be waited for
+			go sendTickets(userTickets, firstName, lastName, email)
+
 			firstNames := extractFirstNames()
 
 			if remainingTickets == 0 {
 				fmt.Printf("Our conference is booked! Come back next year\n")
-				break // ends the indefinite loop
+				//break // ends the indefinite loop
 			}
 
 			fmt.Printf("All the bookings made are: %v\n", firstNames)
@@ -52,8 +58,9 @@ func main() {
 				fmt.Println("Number of tickets requested is invalid")
 			}
 		}
+		wg.Wait() // wait for the goroutine in counter to be 0
 	}
-}
+//}
 
 func greetUsers() {
 	fmt.Printf("Welcome to our %v booking application\n", conferenceName)
@@ -103,8 +110,18 @@ func bookTickets(userTickets uint ,firstName string, lastName string, email stri
 
 
 	bookings = append(bookings, userInfo)
-	fmt.Printf("List of all bookings are %v\n", bookings)
+	//fmt.Printf("List of all bookings are %v\n", bookings)
 	fmt.Printf("Thank you %v %v for booking %v number of tickets. You will receive an email at %v to confirm details of your booking.\n", firstName, lastName, userTickets, email)
 				fmt.Printf("%v tickets remaining for %v\n", remainingTickets, conferenceName)
 	return bookings
+}
+
+func sendTickets(userTickets uint, firstName string, lastName string, email string) {
+	// simulating delay for 15 seconds
+	time.Sleep(15 * time.Second)
+	var ticket = fmt.Sprintf("%v tickets for %v %v", userTickets, firstName, lastName)
+	fmt.Println("----------------------------------")
+	fmt.Printf("Sending ticket:\n%v to email address %v\n", ticket, email)
+	fmt.Println("------------------------------------")
+	wg.Done()
 }
