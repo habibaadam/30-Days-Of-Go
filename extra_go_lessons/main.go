@@ -24,6 +24,11 @@ func main() {
 	total := sumVariadic(20, 40, 50, 40)
 	fmt.Println(total)
 
+	// anonymous or IIFE(immediately invoked function expression)
+	result := func(a int , b int) int {
+		return a + b
+	}(5, 20)
+	fmt.Printf("Result of IIFE is %v\n", result)
 
 }
 
