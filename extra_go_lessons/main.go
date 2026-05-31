@@ -20,6 +20,11 @@ func main() {
 	}
 	checkExistence(newMap, "day3")
 
+	// variadic function + named return value
+	total := sumVariadic(20, 40, 50, 40)
+	fmt.Println(total)
+
+
 }
 
 func spreadOperator(firstArr []string, secondArr []string) {
@@ -45,3 +50,10 @@ func checkExistence(newMap map[string]int, key string) {
 	fmt.Println(val, ok)
 }
 
+func sumVariadic(nums ...int) (total int ) {
+	total = 0
+	for _, n := range nums {
+		total = total + n
+	}
+	return
+}
