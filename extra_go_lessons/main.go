@@ -13,12 +13,11 @@ func main() {
 	points := []int{10, 24, 35, 40, 60}
 	loopRange(points)
 
-	// comma ok syntax
+	// comma ok syntax to check existence of a key in a map
 	newMap := map[string]int{
 		"day1": 20,
 		"day2": 30,
 	}
-
 	checkExistence(newMap, "day3")
 
 }
@@ -45,3 +44,4 @@ func checkExistence(newMap map[string]int, key string) {
 	val, ok := newMap[key]
 	fmt.Println(val, ok)
 }
+
