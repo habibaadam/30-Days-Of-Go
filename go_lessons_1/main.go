@@ -83,9 +83,20 @@ func doSomething(success bool) error {
 }
 
 
+func addScore(score *int) {
+	*score = *score + 5 // dereference, to update the value of a pointer
+}
 
 
 func main() {
+
+	score := 10
+
+	fmt.Println("before:", score)
+
+	addScore(&score)
+	fmt.Println("after:", score)
+	
 	// running example for error handling
 	run()
 
