@@ -102,13 +102,29 @@ func main() {
 
 
 
-    fmt.Println("Starting server on port 8080")
-	err := http.ListenAndServe(":8080", nil) // specifying a port to listen
+    //fmt.Println("Starting server on port 8080")
+	//err := http.ListenAndServe(":8080", nil) // specifying a port to listen
 
 
 
-	if err == nil {
-		fmt.Println(err)
+	//if err == nil {
+		//fmt.Println(err)
+	//}
+
+	// getting data from an api(client-side)
+	url := "https://jsonplaceholder.typicode.com/todos"
+
+	response, error := http.Get(url)
+
+	if error != nil {
+		fmt.Println(error)
+		return
 	}
+
+	defer response.Body.Close()
+
+	fmt.Println("status code: ", response.StatusCode)
+	fmt.Println("headers: ", response.Header)
+
 
 }
