@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -42,11 +43,62 @@ func welcomeQueryParam(res http.ResponseWriter, req *http.Request) {
 }
 
 
+// request type
+type TestRequest struct{
+	Name string `json:"name"`
+}
+
+// helper function to take in data and encode to json
+func WriteJSON(res http.ResponseWriter, status int, data any) {
+	res.Header().Set("Content-Type", "application/json")
+	res.WriteHeader(status)
+	_ = json.NewEncoder(res).Encode(data)
+}
+
+func testHandler(res http.ResponseWriter, req *http.Request) {
+	if req.Method != http.MethodPost {
+		WriteJSON(res, http.StatusMethodNotAllowed, map[string]any {
+			"ok": "false",
+			"error": "Only post is allowed",
+		})
+		return
+	}
+	defer req.Body.Close()
+
+	var request TestRequest
+
+	decoded := json.NewDecoder(req.Body)
+	if error := decoded.Decode(&request); error != nil {
+		WriteJSON(res, http.StatusBadRequest, map[string]any{
+			"ok": false,
+			"error": "Invalid json format",
+		})
+		return
+	}
+	request.Name = strings.TrimSpace(request.Name)
+
+	if request.Name == " " {
+		WriteJSON(res, http.StatusBadRequest, map[string]any{
+			"ok": false,
+			"error": "Fields must not ne empty",
+		})
+		return
+	}
+
+	WriteJSON(res, http.StatusOK, map[string]any{
+		"ok": true,
+		"data": request,
+		"time": time.Now().UTC(),
+	})
+
+}
+
 
 func main() {
     http.HandleFunc("/", rootRouteHandler)
 	http.HandleFunc("/hello", welcomeMessage) // registering a route with a handler method -> welcomeMessage
 	http.HandleFunc("/propergreet", welcomeQueryParam)
+	http.HandleFunc("/testdecoding", testHandler)
 
 
 
