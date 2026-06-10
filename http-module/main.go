@@ -94,26 +94,89 @@ func testHandler(res http.ResponseWriter, req *http.Request) {
 
 }
 
+// defining response structure from external api
+type CatFactResponseStructure struct {
+		Fact string `json:"fact"`
+		Length int `json:"length"`
+}
+
+//
+func fetchCatFact() (CatFactResponseStructure, error) {
+	url := "https://catfact.ninja/fact"
+
+	response, error := http.Get(url)
+	if error != nil {
+		return CatFactResponseStructure{}, error
+	}
+	defer response.Body.Close()
+
+	if response.StatusCode != http.StatusOK {
+		return CatFactResponseStructure{}, fmt.Errorf("external api failure: %s", response.Status)
+	}
+
+	bodyBytes, error := io.ReadAll(response.Body)
+	if error != nil {
+		return CatFactResponseStructure{}, error
+	}
+
+	var data CatFactResponseStructure
+
+	if error = json.Unmarshal(bodyBytes, &data); error != nil {
+		return CatFactResponseStructure{}, error
+	}
+
+	return data, nil
+}
+
+
+func externalHandler(res http.ResponseWriter, req *http.Request) {
+
+	if req.Method != http.MethodGet {
+		WriteJSON(res, http.StatusMethodNotAllowed, map[string]any {
+			"ok": false,
+			"error": "Only Get method is allowed",
+		})
+		return
+	}
+
+	data, error := fetchCatFact()
+	if error != nil {
+		WriteJSON(res, http.StatusBadGateway, map[string]any {
+			"ok": "false",
+			"error": error,
+		})
+		return
+	}
+
+	WriteJSON(res, http.StatusOK, map[string]any{
+		"ok": true,
+		"timestamp": time.Now().UTC(),
+		"data fetched": data,
+	})
+}
 
 func main() {
     http.HandleFunc("/", rootRouteHandler)
 	http.HandleFunc("/hello", welcomeMessage) // registering a route with a handler method -> welcomeMessage
 	http.HandleFunc("/propergreet", welcomeQueryParam)
 	http.HandleFunc("/testdecoding", testHandler)
+	http.HandleFunc("/externalapi", externalHandler)
 
 
+    fmt.Println("Starting server on port 8080")
+	err := http.ListenAndServe(":8080", nil) // specifying a port to listen
 
-    //fmt.Println("Starting server on port 8080")
-	//err := http.ListenAndServe(":8080", nil) // specifying a port to listen
+	if err == nil {
+		fmt.Println(err)
+	}
 
+	/* getting data from an api(client-side)
+	url := "https://catfact.ninja/fact"
 
-
-	//if err == nil {
-		//fmt.Println(err)
-	//}
-
-	// getting data from an api(client-side)
-	url := "https://jsonplaceholder.typicode.com/todos"
+	type CatFactResponseStructure struct {
+		Fact string `json:"fact"`
+		Length int `json:"length"`
+	}
 
 	response, error := http.Get(url)
 
@@ -131,15 +194,23 @@ func main() {
 	// reading raw response body
 	bodyBytes, error := io.ReadAll(response.Body)
 	if error != nil {
-		fmt.Println(error)
+		fmt.Println("reading body failed", error)
 		return
 	}
 
-	bodytext := string(bodyBytes)
-	fmt.Println(bodytext)
+	var data CatFactResponseStructure
+
+	if error := json.Unmarshal(bodyBytes, &data); error != nil {
+		fmt.Println("json unmarshal failed", error)
+		return
+	}
+
+
+	//bodytext := string(bodyBytes)
+	fmt.Println(data.Fact, data.Length)
 
 	//fmt.Println("status code: ", response.StatusCode)
 	//fmt.Println("headers: ", response.Header)
 
-
+	*/
 }
