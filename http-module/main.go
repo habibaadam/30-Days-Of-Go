@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"strings"
 	"time"
@@ -123,8 +124,22 @@ func main() {
 
 	defer response.Body.Close()
 
-	fmt.Println("status code: ", response.StatusCode)
-	fmt.Println("headers: ", response.Header)
+	if response.StatusCode != http.StatusOK {
+		fmt.Println(response.Status)
+	}
+
+	// reading raw response body
+	bodyBytes, error := io.ReadAll(response.Body)
+	if error != nil {
+		fmt.Println(error)
+		return
+	}
+
+	bodytext := string(bodyBytes)
+	fmt.Println(bodytext)
+
+	//fmt.Println("status code: ", response.StatusCode)
+	//fmt.Println("headers: ", response.Header)
 
 
 }
