@@ -26,7 +26,7 @@ func Load() (Config, error) {
 		return Config{}, fmt.Errorf("Failed to get db uri")
 	}
 
-	dbName, err := extractEnv("MONGO_DB_NAME")
+	dbName, err := extractEnv("MONOD_DB_NAME")
 	if err != nil {
 		return Config{}, fmt.Errorf("Failed to get db name")
 	}
