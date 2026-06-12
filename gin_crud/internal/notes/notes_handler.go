@@ -126,3 +126,34 @@ func (h *Handler) UpdateNoteById(c *gin.Context) {
 		"updated note details": updateNote,
 	})
 }
+
+func (h *Handler) DeleteNoteByID(c *gin.Context) {
+	idStr := c.Param("id")
+
+	objID, err := primitive.ObjectIDFromHex(idStr)
+	if err != nil {
+		c.JSON(http.StatusBadGateway, gin.H{
+			"error": "Invalid ID Format",
+		})
+		return
+	}
+
+	deletedNote, err := h.repo.DeletebyId(c.Request.Context(), objID)
+
+	if !deletedNote {
+		c.JSON(http.StatusNotFound, gin.H{
+			"error": "Note with ID not found",
+		})
+	}
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+		"error": "Failed to delete a note by the given ID",
+	})
+	return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"deleted": true,
+	})
+
+}

@@ -100,3 +100,22 @@ func (r *NotesRepo) UpdateById(ctx context.Context, noteId primitive.ObjectID, r
 	}
 	return updatedNote, nil;
 }
+
+func (r *NotesRepo) DeletebyId(ctx context.Context, noteId primitive.ObjectID) (bool, error) {
+	childContext, cancel := context.WithTimeout(ctx, 5 *time.Second)
+	defer cancel()
+
+	filter := bson.M{
+		"_id": noteId,
+	}
+
+	result, err := r.collection.DeleteOne(childContext, filter)
+	if err != nil {
+		return false, fmt.Errorf("Failed to delete the note with specified ID: %w", err)
+	}
+
+	if (result.DeletedCount == 0) {
+		return false, nil
+	}
+	return true, nil
+}
