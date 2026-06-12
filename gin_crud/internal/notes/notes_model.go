@@ -21,3 +21,9 @@ type CreateNoteReq struct {
 	Pinned bool `json:"pinned"`
 
 }
+
+type UpdateNoteReq struct {
+	Title string `json:"title"` // required fields in request
+	Content string `json:"content"`
+	Pinned bool `json:"pinned"`
+}

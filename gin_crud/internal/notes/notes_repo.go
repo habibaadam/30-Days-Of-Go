@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"time"
 
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
 type NotesRepo struct {
@@ -51,4 +53,50 @@ func (r *NotesRepo) List(ctx context.Context) ([]Note, error) {
 		return nil, fmt.Errorf("Getting notes failed: %w", err)
 	}
 	return allNotes, nil
+}
+
+func (r *NotesRepo) ListID(ctx context.Context, noteId primitive.ObjectID) (Note, error) {
+	childContext, cancel := context.WithTimeout(ctx, 5 *time.Second)
+	defer cancel()
+
+	filter := bson.M{
+		"_id": noteId,
+	}
+
+	var note Note
+
+	err := r.collection.FindOne(childContext, filter, options.FindOne()).Decode(&note)
+	if err != nil {
+		return Note{}, fmt.Errorf("Failed to find the note by the id: %w", err)
+	}
+	return note, nil
+}
+
+func (r *NotesRepo) UpdateById(ctx context.Context, noteId primitive.ObjectID, req UpdateNoteReq) (Note, error) {
+	childContext, cancel := context.WithTimeout(ctx, 5 *time.Second)
+	defer cancel()
+
+	filter := bson.M{
+		"_id": noteId,
+	}
+
+	updateValues := bson.M{
+		"$set" : bson.M{
+			"title": req.Title,
+			"content": req.Content,
+			"pinned": req.Pinned,
+			"UpdatedAt": time.Now().UTC(),
+		},
+	}
+
+	// additionally configuring findoneandupdate to return the doc after updating the doc.
+	opts := options.FindOneAndUpdate().SetReturnDocument(options.After)
+
+	var updatedNote Note
+
+	err := r.collection.FindOneAndUpdate(childContext, filter, updateValues, opts).Decode(&updatedNote)
+	if err != nil {
+		return Note{}, fmt.Errorf("Failed to update the note by the id: %w", err)
+	}
+	return updatedNote, nil;
 }
