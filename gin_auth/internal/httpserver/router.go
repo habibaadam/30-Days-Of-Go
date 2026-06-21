@@ -2,7 +2,9 @@ package httpserver
 
 import (
 	"gin_auth/internal/app"
+	"gin_auth/internal/middleware"
 	"gin_auth/internal/user"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
@@ -24,6 +26,27 @@ func NewRouter(a *app.App) *gin.Engine {
 
 	r.POST("/register", userHandler.Register)
 	r.POST("/login", userHandler.Login)
+
+
+	api := r.Group("/api")
+	api.Use(middleware.AuthRequired(a.Config.JWT_SECRET)) // protecting routes by adding middleware
+
+
+	api.GET("/files", func (c *gin.Context) {
+		userId, _ := middleware.GetUserId(c)
+		c.JSON(http.StatusOK, gin.H{
+			"ok": true,
+			"userId": userId,
+			"files": []any{},
+		})
+	})
+
+	api.GET("products", func (c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{
+			"ok": true,
+			"products": []any{},
+		})
+	})
 
 	return r
 }
