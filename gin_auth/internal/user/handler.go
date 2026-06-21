@@ -37,3 +37,24 @@ func (h *Handler) Register(c *gin.Context){
 
 	c.JSON(http.StatusCreated, output)
 }
+
+func (h *Handler) Login(c *gin.Context) {
+	var input LoginInput
+
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid json body",
+		})
+		return
+	}
+
+	login_output, err := h.service.Login(c.Request.Context(), input)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, login_output)
+}

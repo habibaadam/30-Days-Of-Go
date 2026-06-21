@@ -30,6 +30,11 @@ type RegisterInput struct {
 	Password string `json:"password"`
 }
 
+type LoginInput struct {
+	Email string `json:"email"`
+	Password string `json:"password"`
+}
+
 type AuthResult struct {
 	Token string `json:"token"`
 
@@ -56,7 +61,7 @@ func (s *Service) Register(ctx context.Context, input RegisterInput) (AuthResult
 		return AuthResult{}, errors.New("Email is already registered. Try with a different email")
 	}
 
-	if err != nil && !errors.Is(err, mongo.ErrNoDocuments) {
+	if !errors.Is(err, mongo.ErrNoDocuments) {
 		return AuthResult{}, err
 	}
 
@@ -91,4 +96,40 @@ func (s *Service) Register(ctx context.Context, input RegisterInput) (AuthResult
 		Token: token,
 		User: ToPublic(created),
 	}, nil
+}
+
+func (s *Service) Login(ctx context.Context, input LoginInput) (AuthResult, error) {
+	email := strings.ToLower(strings.TrimSpace(input.Email))
+	passwd := strings.ToLower(strings.TrimSpace(input.Password))
+
+	if email == "" || passwd == "" {
+		return AuthResult{}, errors.New("Email and password are requird")
+	}
+
+	if len(passwd) < 6 {
+		return AuthResult{}, errors.New("Password must be at least 6 characters")
+	}
+
+	existing_user, err := s.repo.FindByEmail(ctx, email)
+
+	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return AuthResult{}, errors.New("Invalid credentials")
+		}
+	}
+
+	if err := bcrypt.CompareHashAndPassword([]byte(existing_user.PasswordHash), []byte(input.Password)); err != nil {
+		return AuthResult{}, errors.New("Passwords do not match")
+	}
+	token, err := auth.CreateToken(s.jwtSecret, existing_user.ID.Hex(), existing_user.Role)
+
+	if err != nil {
+		return AuthResult{}, errors.New("Failed to generate token")
+	}
+
+	return AuthResult{
+		Token: token,
+		User: ToPublic(existing_user),
+	}, nil
+
 }

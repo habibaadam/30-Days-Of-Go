@@ -23,6 +23,7 @@ func NewRouter(a *app.App) *gin.Engine {
 	userHandler := user.NewHandler(userService)
 
 	r.POST("/register", userHandler.Register)
+	r.POST("/login", userHandler.Login)
 
 	return r
 }
