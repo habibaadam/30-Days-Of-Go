@@ -19,7 +19,7 @@ func Load() (MongoConfig, error) {
 	_ = godotenv.Load()
 
 	cfg := MongoConfig{
-		MONGO_URI: strings.TrimSpace(os.Getenv("MONGO_UR")),
+		MONGO_URI: strings.TrimSpace(os.Getenv("MONGO_URI")),
 		MONGO_DB_NAME: strings.TrimSpace(os.Getenv("MONGO_DB_NAME")),
 		JWT_SECRET: strings.TrimSpace(os.Getenv("JWT_SECRET")),
 	}

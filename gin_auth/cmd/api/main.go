@@ -21,8 +21,8 @@ func main() {
 			log.Printf("Shutdown warning: %v", err)
 		}
 	}()
-	
-	router := httpserver.NewRouter()
+
+	router := httpserver.NewRouter(app)
 
 	// builder server struct explictly
 	server := &http.Server{
